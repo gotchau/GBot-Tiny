@@ -1,0 +1,106 @@
+//Копипаст лист
+
+//файл Conditionals_post.h ищем по User Interface
+// Custom User Interface
+#define HAS_CUSTOM_GREENBTN (PIN_EXISTS(CUSTOM_GREENBTN))
+#define HAS_CUSTOM_YELLOWBTN (PIN_EXISTS(CUSTOM_YELLOWBTN))
+#define HAS_CUSTOM_REDBTN (PIN_EXISTS(CUSTOM_REDBTN))
+
+//файл Configuration.h в любом месте
+//я вставил после "экрана загрузки"
+//Custom user buttons
+#define CUSTOM_GREENBTN_PIN   40
+#define CUSTOM_YELLOWBTN_PIN  42
+#define CUSTOM_REDBTN_PIN     44
+
+//файл Marlin_main.cpp над void loop()
+//под ENABLED(SDSUPPORT) && DISABLED(ULTRA_LCD)
+//включение подтягивающих резистров
+// приблизительная строка 15532
+#if HAS_CUSTOM_GREENBTN
+    SET_INPUT_PULLUP(CUSTOM_GREENBTN_PIN);
+#endif
+
+#if HAS_CUSTOM_YELLOWBTN
+    SET_INPUT_PULLUP(CUSTOM_YELLOWBTN_PIN);
+#endif
+
+#if HAS_CUSTOM_REDBTN
+    SET_INPUT_PULLUP(CUSTOM_REDBTN_PIN);
+#endif
+
+//файл Marlin_main.cpp рядом с HAS_KILL
+// приблизительная строка 14940
+#if HAS_CUSTOM_GREENBTN
+  static int customGreenBtnCounter = 0;
+  const int CUSTOM_GREENBTN_DELAY = 750;
+  if(!READ(CUSTOM_GREENBTN_PIN))
+    customGreenBtnCounter++;
+  else
+    customGreenBtnCounter = 0;
+  if (customGreenBtnCounter == CUSTOM_GREENBTN_DELAY)
+  {
+    enqueue_and_echo_commands_P(PSTR("G28"));
+    enqueue_and_echo_commands_P(PSTR("M18"));
+  }
+  #endif
+
+  #if HAS_CUSTOM_YELLOWBTN
+  static int customYellowBtnCounter = 0;
+  static uint8_t customYellowBtnFlag = 0;
+  const int CUSTOM_YELLOWBTN_DELAY = 750;
+  if(!READ(CUSTOM_YELLOWBTN_PIN))
+    customYellowBtnCounter++;
+  else
+    customYellowBtnCounter = 0;
+  if (customYellowBtnCounter == CUSTOM_YELLOWBTN_DELAY)
+  {
+    switch (customYellowBtnFlag)
+    {
+    case 0:
+      enqueue_and_echo_commands_P(PSTR("M104 S210"));
+      customYellowBtnFlag++;
+      break;
+
+    case 1:
+      enqueue_and_echo_commands_P(PSTR("M104 S235"));
+      customYellowBtnFlag++;
+      break;
+
+    case 2:
+      enqueue_and_echo_commands_P(PSTR("M104 S0"));
+      customYellowBtnFlag = 0;
+      break;
+    }
+  }
+  #endif
+
+  #if HAS_CUSTOM_REDBTN
+  static int customRedBtnCounter = 0;
+  static uint8_t customRedBtnFlag = 0;
+  const int CUSTOM_REDBTN_DELAY = 750;
+  if(!READ(CUSTOM_REDBTN_PIN))
+    customRedBtnCounter++;
+  else
+    customRedBtnCounter = 0;
+  if (customRedBtnCounter == CUSTOM_REDBTN_DELAY)
+  {
+    switch (customRedBtnFlag)
+    {
+    case 0:
+      enqueue_and_echo_commands_P(PSTR("M140 S60"));
+      customRedBtnFlag++;
+      break;
+
+    case 1:
+      enqueue_and_echo_commands_P(PSTR("M140 S100"));
+      customRedBtnFlag++;
+      break;
+
+    case 2:
+      enqueue_and_echo_commands_P(PSTR("M140 S0"));
+      customRedBtnFlag = 0;
+      break;
+    }
+  }
+  #endif
